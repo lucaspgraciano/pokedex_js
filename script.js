@@ -1,5 +1,10 @@
 const cards = document.querySelector('.cards')
 const counter = 151
+
+const botaoBusca = document.querySelector("#buscar")
+const campoBusca = document.querySelector("#busca")
+const divBusca = document.querySelector("#buscaPokemon")
+
 const types = [
     'fire',
     'grass',
@@ -23,7 +28,7 @@ const cardHTML = `
             <small>#{id}</small>
         </div>
         <div class="img bg-{type}">
-            <img src="https://pokeres.bastionbot.org/images/pokemon/{id}.png" alt="{name}" />
+           <img src="https://pokeres.bastionbot.org/images/pokemon/{id}.png" alt="{name}" />
         </div>
         <div class="type {type}">
             <p>{type}</p>
@@ -42,6 +47,19 @@ const getType = (data) =>{
 }
 const fetchPokemon = async (number) => {
     if(number === undefined){ 
+        alert('POKÉMON NÃO ENCONTRADO')
+        return
+    }
+    const url = `https://pokeapi.co/api/v2/pokemon/${number}`
+    const response = await fetch(url).then((response) => response.json())
+    const {id, name, types,} = response
+    const type = getType(types)
+    return {id, name, type}
+
+}
+const fetchPokemonBusca = async (number) => {
+    if(number === undefined){ 
+        alert('POKÉMON NÃO ENCONTRADO')
         return
     }
     const url = `https://pokeapi.co/api/v2/pokemon/${number}`
@@ -63,6 +81,17 @@ const createPokemonCard = (pokemon) => {
     newCard = replacer(newCard, `\{type\}`, type)
     cards.innerHTML += newCard
 }
+const createPokemonCardBusca = (pokemon) => {
+    cards.innerHTML = ''
+    const {id, name, type} = pokemon
+    let newCard = replacer(cardHTML, `\{id\}`, id)
+    newCard = replacer(newCard, `\{name\}`, name)
+    newCard = replacer(newCard, `\{type\}`, type)
+    cards.innerHTML += newCard
+}
+const clear = () => {
+    cards.innerHTML = ''
+}
 const fetchPokemons = async () => {
     for(let i=1; i<=counter; i++){
         const pokemon = await fetchPokemon(i)
@@ -70,4 +99,17 @@ const fetchPokemons = async () => {
     }
 }
 
+botaoBusca.onclick = async (event) =>{
+    event.preventDefault()
+    const value = campoBusca.value
+    if(value == ''){
+        clear()
+        fetchPokemons()
+        return
+    }else{
+        const pokemon = await fetchPokemonBusca(value)
+        createPokemonCardBusca(pokemon)
+    }
+    
+}
 fetchPokemons()
